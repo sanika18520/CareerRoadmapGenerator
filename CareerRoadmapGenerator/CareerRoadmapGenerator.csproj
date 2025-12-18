@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<GenerateDocumentationFile>false</GenerateDocumentationFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- EF Core runtime and SQL Server provider -->
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.*" />
+		<!-- Design package (for tooling/scaffolding) -->
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.*" />
+		<!-- Optional: Tools to run dotnet-ef if you want -->
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.*" />
+		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.22" />
+	</ItemGroup>
+
+</Project>
