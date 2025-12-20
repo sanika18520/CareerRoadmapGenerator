@@ -1,169 +1,120 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using CareerRoadmapGenerator.Data;
+using CareerRoadmapGenerator.Models.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using CareerRoadmapGenerator.Models;
+using System.Security.Claims;
 
 namespace CareerRoadmapGenerator.Controllers
 {
-    public class UserProgressesController : Controller
+    [Route("api/[controller]")]
+    [ApiController]
+    [Authorize]
+    public class UserProgressesController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public UserProgressesController(AppDbContext context)
+        public UserProgressesController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // GET: UserProgresses
-        public async Task<IActionResult> Index()
+        // GET: api/UserProgresses
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<UserCareerProgress>>> GetUserProgresses()
         {
-            var appDbContext = _context.UserProgresses.Include(u => u.Career).Include(u => u.Skill);
-            return View(await appDbContext.ToListAsync());
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+            var data = await _context.UserCareerProgresses
+                                 .Where(p => p.UserId == userId)
+                                 .ToListAsync();
+            return Ok(data);
         }
 
-        // GET: UserProgresses/Details/5
-        public async Task<IActionResult> Details(int? id)
+        // GET: api/UserProgresses/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<UserCareerProgress>> GetUserProgress(int id)
         {
-            if (id == null)
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var progress = await _context.UserCareerProgresses
+                                         .FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+
+            if (progress == null)
             {
                 return NotFound();
             }
 
-            var userProgress = await _context.UserProgresses
-                .Include(u => u.Career)
-                .Include(u => u.Skill)
-                .FirstOrDefaultAsync(m => m.UserProgressId == id);
-            if (userProgress == null)
-            {
-                return NotFound();
-            }
-
-            return View(userProgress);
+            return progress;
         }
 
-        // GET: UserProgresses/Create
-        public IActionResult Create()
-        {
-            ViewData["CareerId"] = new SelectList(_context.Careers, "CareerId", "CareerId");
-            ViewData["SkillId"] = new SelectList(_context.Skills, "SkillId", "SkillId");
-            return View();
-        }
-
-        // POST: UserProgresses/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: api/UserProgresses
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("UserProgressId,UserId,CareerId,SkillId,ProgressPercentage")] UserProgress userProgress)
+        public async Task<ActionResult<UserCareerProgress>> PostUserProgress(UserCareerProgress progress)
         {
-            if (ModelState.IsValid)
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
             {
-                _context.Add(userProgress);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return Unauthorized();
             }
-            ViewData["CareerId"] = new SelectList(_context.Careers, "CareerId", "CareerId", userProgress.CareerId);
-            ViewData["SkillId"] = new SelectList(_context.Skills, "SkillId", "SkillId", userProgress.SkillId);
-            return View(userProgress);
-        }
+            progress.UserId = userId;
 
-        // GET: UserProgresses/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var userProgress = await _context.UserProgresses.FindAsync(id);
-            if (userProgress == null)
-            {
-                return NotFound();
-            }
-            ViewData["CareerId"] = new SelectList(_context.Careers, "CareerId", "CareerId", userProgress.CareerId);
-            ViewData["SkillId"] = new SelectList(_context.Skills, "SkillId", "SkillId", userProgress.SkillId);
-            return View(userProgress);
-        }
-
-        // POST: UserProgresses/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("UserProgressId,UserId,CareerId,SkillId,ProgressPercentage")] UserProgress userProgress)
-        {
-            if (id != userProgress.UserProgressId)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(userProgress);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!UserProgressExists(userProgress.UserProgressId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["CareerId"] = new SelectList(_context.Careers, "CareerId", "CareerId", userProgress.CareerId);
-            ViewData["SkillId"] = new SelectList(_context.Skills, "SkillId", "SkillId", userProgress.SkillId);
-            return View(userProgress);
-        }
-
-        // GET: UserProgresses/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var userProgress = await _context.UserProgresses
-                .Include(u => u.Career)
-                .Include(u => u.Skill)
-                .FirstOrDefaultAsync(m => m.UserProgressId == id);
-            if (userProgress == null)
-            {
-                return NotFound();
-            }
-
-            return View(userProgress);
-        }
-
-        // POST: UserProgresses/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var userProgress = await _context.UserProgresses.FindAsync(id);
-            if (userProgress != null)
-            {
-                _context.UserProgresses.Remove(userProgress);
-            }
-
+            _context.UserCareerProgresses.Add(progress);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return CreatedAtAction(nameof(GetUserProgress), new { id = progress.Id }, progress);
+        }
+        // PUT: api/UserProgresses/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutUserProgress(int id, UserCareerProgress progress)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (id != progress.Id || progress.UserId != userId)
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(progress).State = EntityState.Modified;
+            try
+            {
+
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!UserProgressExists(id, userId))
+                {
+                    return NotFound();
+                }
+
+                throw;
+            }
+            return NoContent();
         }
 
-        private bool UserProgressExists(int id)
+        // DELETE: api/UserProgresses/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUserProgress(int id)
         {
-            return _context.UserProgresses.Any(e => e.UserProgressId == id);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var progress = await _context.UserCareerProgresses
+                                         .FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+
+            if (progress == null)
+            {
+                return NotFound();
+            }
+
+            _context.UserCareerProgresses.Remove(progress);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        private bool UserProgressExists(int id, string userId)
+        {
+            return _context.UserCareerProgresses.Any(e => e.Id == id && e.UserId == userId);
         }
     }
 }

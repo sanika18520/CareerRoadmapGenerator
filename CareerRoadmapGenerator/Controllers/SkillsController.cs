@@ -1,19 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using CareerRoadmapGenerator.Data;
+using CareerRoadmapGenerator.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using CareerRoadmapGenerator.Models;
 
 namespace CareerRoadmapGenerator.Controllers
 {
     public class SkillsController : Controller
     {
-        private readonly AppDbContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public SkillsController(AppDbContext context)
+        public SkillsController(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -21,8 +18,8 @@ namespace CareerRoadmapGenerator.Controllers
         // GET: Skills
         public async Task<IActionResult> Index()
         {
-            var appDbContext = _context.Skills.Include(s => s.Career);
-            return View(await appDbContext.ToListAsync());
+            var skills = await _context.Skills.ToListAsync();
+            return View(skills);
         }
 
         // GET: Skills/Details/5

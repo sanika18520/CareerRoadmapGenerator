@@ -1,19 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using CareerRoadmapGenerator.Data;
+using CareerRoadmapGenerator.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using CareerRoadmapGenerator.Models;
 
 namespace CareerRoadmapGenerator.Controllers
 {
     public class ResourcesController : Controller
     {
-        private readonly AppDbContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public ResourcesController(AppDbContext context)
+        public ResourcesController(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -21,8 +18,8 @@ namespace CareerRoadmapGenerator.Controllers
         // GET: Resources
         public async Task<IActionResult> Index()
         {
-            var appDbContext = _context.Resources.Include(r => r.Career).Include(r => r.Skill);
-            return View(await appDbContext.ToListAsync());
+            var resources = _context.Resources.Include(r => r.Career).Include(r => r.Skill);
+            return View(await resources.ToListAsync());
         }
 
         // GET: Resources/Details/5

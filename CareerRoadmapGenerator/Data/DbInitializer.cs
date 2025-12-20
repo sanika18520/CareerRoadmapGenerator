@@ -1,11 +1,12 @@
-﻿using System.Linq;
-using CareerRoadmapGenerator.Models;
+﻿using CareerRoadmapGenerator.Models;
+using System;
+using System.Linq;
 
 namespace CareerRoadmapGenerator.Data
 {
     public class DbInitializer
     {
-        public static void Initialize(AppDbContext context)
+        public static void Initialize(ApplicationDbContext context)
         {
             context.Database.EnsureCreated();
 

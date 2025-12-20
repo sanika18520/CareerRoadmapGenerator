@@ -1,19 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using CareerRoadmapGenerator.Data;
+using CareerRoadmapGenerator.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using CareerRoadmapGenerator.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace CareerRoadmapGenerator.Controllers
 {
     public class CareersController : Controller
     {
-        private readonly AppDbContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public CareersController(AppDbContext context)
+        public CareersController(ApplicationDbContext context)
         {
             _context = context;
         }
